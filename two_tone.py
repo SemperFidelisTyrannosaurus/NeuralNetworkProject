@@ -16,7 +16,7 @@ import numpy as np
 class Network:
     kmers = dd.load_unique_kmers(128,7)    
     def __init__(self):
-        self.input_extract = [ 0 for kmer in kmers]
+        self.input_extract = [ 0 for kmer in Network.kmers]
         self.human_weight = [ 1 for i in range(128)]
         self.viral_weight = [ 1 for i in range(128)]
         self.delta_human_w = [ 0 for i in range(128)]
@@ -34,7 +34,7 @@ class Network:
         for kmer in Network.kmers:
             search_str = "(?=("+kmer+"))"
             hits = len(re.findall(search_str, string))
-            self.input_extract[kmers.index(kmer)] = hits
+            self.input_extract[Network.kmers.index(kmer)] = hits
         return
 
     def activation_fxn(self):
@@ -75,7 +75,7 @@ class Network:
     def backpropagation(self, species, eta):
         self.calculate_error(species)
         self.get_delta_value()
-        self.det_delta_weight(eta)
+        self.get_delta_weight(eta)
         self.update_weights()
         self.input_extract = [ 0 for kmer in kmers]
         self.delta_human_w = [ 0 for i in range(128)]
@@ -99,7 +99,7 @@ class Network:
 
     def train_network(self, string, species, eta=0.1):
         self.forward_prop(string)
-        self.backpropagation(self,species,eta)
+        self.backpropagation(species,eta)
         return
 
 
