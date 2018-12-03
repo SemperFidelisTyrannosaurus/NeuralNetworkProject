@@ -3,6 +3,12 @@ from cnn import dna_dataset as dd
 import re
 import numpy as np
 
+""" 
+ FFBP approach to classification- utlizies learning of top 64 7-mers (of each) species.
+ utilizes bipartite graph- two output classification nodes connected to the same set of 128 input nodes.
+ input nodes are fed values by filtering operation- each node corresponding to the number of each type of 7mer in the data
+"""
+
 class Network:
     kmers = dd.load_unique_kmers(128,7)    
     def __init__(self):
@@ -21,7 +27,7 @@ class Network:
         self.viral_delta = 0
 
     def capture_input(self,string):
-        for kmer in kmers:
+        for kmer in Network.kmers:
             search_str = "(?=("+kmer+"))"
             hits = len(re.findall(search_str, string))
             self.input_extract[kmers.index(kmer)] = hits
