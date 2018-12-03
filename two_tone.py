@@ -6,7 +6,11 @@ import numpy as np
 """ 
  FFBP approach to classification- utlizies learning of top 64 7-mers (of each) species.
  utilizes bipartite graph- two output classification nodes connected to the same set of 128 input nodes.
- input nodes are fed values by filtering operation- each node corresponding to the number of each type of 7mer in the data
+ input nodes are fed values by filtering operation- each node corresponding to the number of each type of 7mer in the data.
+ 
+ The main place this method loses out is that it examines the 7mer composition and not the order.
+ Where the cnn method aims to place the location of the read in the reference, this merely examines if the 7mer composition is similar
+ to that of target.
 """
 
 class Network:
