@@ -102,3 +102,54 @@ class Network:
         self.backpropagation(self,species,eta)
         return
 
+
+    def classify(self, seq):
+        self.forward_prop(seq)
+        if self.is_human < 0.8 and self.is_virus < 0.8 : return "unclear"
+        if self.is_human > self.is_virus: return "human"
+        elif self.is_human < self.is_virus: return "virus"
+        else: return "unclear"
+
+#provisional main method
+viral_train = "cnn/HIV-1_train.txt"
+human_train = "cnn/hg38_train.txt"
+viral_test = "cnn/HIV-1_test.txt"
+human_test = "cnn/hg38_test.txt"
+classifier = Network()
+
+#train
+with open(viral_train, "r") as vtrain:
+    with open(human_train, "r") as htrain:
+        vtrain.readline()
+        htrain.readline()
+        while True:
+            choice = random.randint(1,2)
+            if choice == 1:
+                v = vtrain.readline()
+                if v is None: break
+                classifier.train_network(v,"virus")
+            else:
+                h = htrain.readline()
+                if h is None: break
+                classifier.train_network(htrain.readline(), "human")
+
+#test:
+with open("evaluation.csv", "w") as outfile:
+    with open(viral_test, "r") as vtest:
+        with open(human_test, "r") as htest:
+            vtest.readline()
+            htest.readline()
+            while True:
+                choice = random.randint(1,2)
+                if choice == 1:
+                    seq = vtest.readline()
+                    if seq is None: break
+                    truth = "virus"
+                    label = classifer.classify(seq)
+                    outfile.write(truth+","+label+","+seq+"\n")
+                else:
+                    seq = htest.readline()
+                    if seq is None: break
+                    truth = "human"
+                    label = classifier.classify(seq)
+                    outfile.write(truth+","+label+","+seq+"\n")
