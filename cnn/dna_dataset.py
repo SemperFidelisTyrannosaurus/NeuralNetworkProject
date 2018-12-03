@@ -3,6 +3,11 @@ Methods to generate and load the dataset for the convolutional network.
 """
 import numpy as np
 import random
+import pickle
+
+def is_valid_char(ch):
+	return (ch == 'A' or ch == 'C' or ch == 'T' or ch == 'G' or 
+		ch == 'a' or ch == 'c' or ch == 't' or ch == 'g')
 
 def dna_string_to_array(str):
 	"""Convert a string containing only A, C, T, or G characters the encoding 
@@ -29,7 +34,7 @@ def random_read(infile, nbytes, start_offset, num_samples):
 		seq = ""
 		for line in infile:
 			for ch in line:
-				if ch == 'A' or ch == 'C' or ch == 'T' or ch == 'G' or ch == 'a' or ch == 'c' or ch == 't' or ch == 'g':
+				if is_valid_char(ch):
 					seq = seq + ch
 			if len(seq) >= num_samples:
 				break
@@ -73,3 +78,71 @@ def load_labeled_data(files):
 		x += data
 
 	return (np.array(x), np.array(y))
+
+def kmer_preprocess(filename, k):
+	"""Returns a list of tuples. In the first position of each tuple is 
+	the k-length sequence, and in the second position is the number of 
+	occurrences for that sequence in the provided file. The list is sorted
+	in descending order based on the number of occurences."""
+	kmers = {}
+	with open(filename) as infile:
+		line = infile.readline()
+		seq = ""
+		for line in infile:
+			for ch in line:
+				if is_valid_char(ch):
+					seq = seq + ch
+					if len(seq) > k:
+						seq = seq[1:]
+					if len(seq) == k:
+						if seq in kmers:
+							kmers[seq] += 1
+						else:
+							kmers[seq] = 1
+	pairs = sorted(kmers.items(), reverse=True, key=lambda x: x[1])
+	return pairs
+
+def gen_kmer_data(k):
+	"""Generates kmer sequences of length k from the hg38.fa and HIV-1.fasta 
+	datafiles, and stores them using pickle."""
+	hg38 = kmer_preprocess('hg38.fa', k)
+	hiv1 = kmer_preprocess('HIV-1.fasta', k)
+	with open("hg38_{}k.pkl".format(k), 'wb') as f:
+	 	pickle.dump(hg38, f)
+	with open("HIV-1_{}k.pkl".format(k), 'wb') as f:
+		pickle.dump(hiv1, f)
+
+def load_kmer_file(filename):
+	"""Loads a single kmer sequence from file."""
+	with open(filename, 'rb') as f:
+		kmers = pickle.load(f)
+		return kmers
+
+def load_kmer_data(k):
+	"""Load both kmer sequences from file."""
+	hg38 = load_kmer_file("hg38_{}k.pkl".format(k))
+	hiv1 = load_kmer_file("HIV-1_{}k.pkl".format(k))
+	return (hg38, hiv1)
+
+def load_unique_kmers(n, k):
+	"""Load kmer data from file and extracts the most frequent sequences with k 
+	length. Half of the data will be from one class and half will be from the
+	other."""	
+	hg38, hiv1 = load_kmer_data(k)
+
+	kmers = set()
+	if len(hg38)+len(hiv1) < n:
+		print("Not enough sequences! {} < {}!".format(len(hg38)+len(hiv1), n))
+	else:
+		i = 0
+		while len(kmers) < n:
+			kmers.add(hg38[i][0].upper())
+			if len(kmers) < n:
+				kmers.add(hiv1[i][0].upper())
+			i += 1
+	return list(kmers)
+
+def kmer_seq_to_filters(kmers):
+	"""Transform kmer sequence data to an np array used in the first filtering
+	stage of the convolutional neural net."""
+	return np.concatenate([dna_string_to_array(s) for s in kmers])

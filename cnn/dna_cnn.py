@@ -11,15 +11,25 @@ import dna_dataset
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+def kmer_initializer(shape, dtype=None, partition_info=None):
+  """This kernel initializer function sets the filters used in the first
+  convolutional layer of the network to detect known features in the datasets
+  to be classified."""
+  kmers = dna_dataset.load_unique_kmers(shape[3], shape[1])
+  return np.reshape(dna_dataset.kmer_seq_to_filters(kmers), shape)
+
 def cnn_model_fn(features, labels, mode):
+  k = 7
+
   # Define layers
   input_layer = tf.reshape(features["x"], [-1, 1, 100, 4])
 
   conv1 = tf.layers.conv2d(
       inputs=input_layer,
       filters=128,
-      kernel_size=[1, 10],
+      kernel_size=[1, k],
       padding="same",
+      kernel_initializer=kmer_initializer,
       activation=tf.nn.relu)
 
   pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[1, 10], strides=10)
@@ -49,6 +59,9 @@ def cnn_model_fn(features, labels, mode):
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
   loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+
+  for var in tf.trainable_variables():
+      tf.summary.histogram(var.op.name, var)
 
   # Training
   if mode == tf.estimator.ModeKeys.TRAIN:
