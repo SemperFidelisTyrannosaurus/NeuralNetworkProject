@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""
+DEPRECATED: try using the new "two_tone" instead, still uses simple neural net and FFBP,
+ however, now offers two distinct output nodes for error detection
+"""
+
 # Rough outline of brute-force binary classification
 #   Issues: classification attempts to get ouput as 0 or 1, may not be clear cut
 #   thresholding function might be required
