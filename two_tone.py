@@ -61,10 +61,10 @@ class Network:
         return
 
     def get_delta_weight(self, eta):
-        hu_step = eta * self.human_delta
-        self.delta_human_w = list(np.multiply(hu_step,self.input_extract))
-        vi_step = eta * self.viral_delta
-        self.delta_viral_w = list(np.multiply(vi_step,self.input_extract))
+        self.human_bias = eta * self.human_delta
+        self.delta_human_w = list(np.multiply(self.human_bias,self.input_extract))
+        self.viral_bias = eta * self.viral_delta
+        self.delta_viral_w = list(np.multiply(self.viral_bias,self.input_extract))
         return
 
     def update_weights(self):
