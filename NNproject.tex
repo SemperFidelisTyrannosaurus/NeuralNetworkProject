@@ -3,6 +3,8 @@
 \usepackage{mathtools}
 \usepackage[margin=0.5in]{geometry}
 \usepackage{graphicx}
+\usepackage{appendix}
+\bibliography{
 
 \title{Neural Networks Project}
 \author{Alfred Arsenault,Brenden Case,David Ashenden,Pranay Vishwanath}
@@ -11,8 +13,8 @@
 %Documentation⎯The final report should include the following elements:
 
 \section{Abstract} 
-%describes the goals and purpose of your
-%network in 1 page.
+It is known that when investigating the microbiological flora in a given environmental niche, microbial culture is a poor approach due to the inability of culture to sustain all environmental microbes \cite{whymeta}. Hence, to investigate certain niches, we require the use of metagenomics- direct study of genetic material from the niche without culturing. One major computational challenge that this necessitates is metagenomic classification- the classification of genetic data depending on source \cite{current}. In this project, we address the problem of sequence classification using Convolutional Neural Networks (CNNs). Further, we examine the effects of filter choice on classification accuracy and speed.\\
+%describes the goals and purpose of your network in 1 page.
 \pagebreak
 
 \section{Problem statement}
@@ -40,5 +42,18 @@
 % network and what might be done to improve it in the future. This could
 % take the form of conjectures, references to other works, etc. and should be
 % 1 page.
+
+\begin{thebibliography}{99}
+\bibitem{whymeta}
+Hugenholtz P., Goebel B.M., and Pace N.R. (1998). Impact of Culture-Independent Studies on the Emerging Phylogenetic View of Bacterial Diversity. \textit{Journal of Bacteriology, 180}(18), 4765–4774. 
+
+\bibitem{current}
+Breitwieser F., Lu J., Salzberg S. (2017). A review of methods and databases for metagenomic classification and assembly. \textit{Briefings in Bioinformatics}. DOI: https://doi-org.ezp.welch.jhmi.edu/10.1093/bib/bbx120
+
+\end{thebibliography}
+
+\smallbreak
+\appendix
+\section{Code Appendix}
 
 \end{document}
