@@ -9,3 +9,12 @@ predicted HIV1              44            956
 accuracy: 0.947
 error:    0.053
 
+Results below used 128 filters with kmer filters for k=10 at the first 
+convolution layer, and 1024 dense logical nodes in the final layer.
+
+                  actual hg38    actual HIV1
+predicted hg38            817            183
+predicted HIV1            134            866
+
+accuracy: 0.8415
+error:    0.1585

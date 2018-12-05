@@ -32,19 +32,22 @@ def kmer_initializer(shape, dtype=None, partition_info=None):
   return np.reshape(dna_dataset.kmer_seq_to_filters(kmers), shape)
 
 def cnn_model_fn(features, labels, mode):
-  k = 20
+  k = 10
 
   # Define layers
   input_layer = tf.reshape(features["x"], [-1, 1, 100, 4])
 
+  # Initial convolution layer uses filters defined from the 64 most common
+  # kmer sequences from each class.
   conv1 = tf.layers.conv2d(
       inputs=input_layer,
       filters=128,
       kernel_size=[1, k],
       padding="same",
-      kernel_initializer=tf.initializers.random_uniform(minval=-1.0, maxval=1.0),
+      kernel_initializer=kmer_initializer,
       activation=tf.nn.relu)
 
+  # Initial pooling layer uses pools 10 bins at a time.
   pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[1, 10], strides=10)
 
   conv2 = tf.layers.conv2d(
@@ -140,9 +143,9 @@ def main(unused_argv):
 
   results = [(test_labels[i],p['classes']) for i,p in enumerate(predict_results)]
   cfmat, stats = calculate_confusion_matrix( results)
-  print("                {:>14} {:>14}".format("actual hg38", "actual HIV1"))
-  print("predicted hg38: {:>14} {:>14}".format(cfmat[1][1], cfmat[1][0]))
-  print("predicted HIV1: {:>14} {:>14}".format(cfmat[0][1], cfmat[0][0]))
+  print("               {:>14} {:>14}".format("actual hg38", "actual HIV1"))
+  print("predicted hg38 {:>14} {:>14}".format(cfmat[1][1], cfmat[1][0]))
+  print("predicted HIV1 {:>14} {:>14}".format(cfmat[0][1], cfmat[0][0]))
   print()
   print("accuracy: {}".format(stats["accuracy"]))
   print("error:    {}".format(stats["error"]))
