@@ -1,0 +1,11 @@
+
+Results below used 128 filters with random uniform initialization from [-1, 1]
+at the first convolution layer, and 1024 dense logical nodes in the final layer.
+
+                   actual hg38    actual HIV1
+predicted hg38             938             62
+predicted HIV1              44            956
+
+accuracy: 0.947
+error:    0.053
+
