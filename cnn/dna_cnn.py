@@ -11,6 +11,19 @@ import dna_dataset
 
 tf.logging.set_verbosity(tf.logging.INFO)
 
+def calculate_confusion_matrix( results):   
+    stats = {}
+    cfmat = [[0, 0], [0, 0]];
+    n = len( results)
+    
+    for r in results:
+        cfmat[round(r[0])][round(r[1])] += 1
+
+    stats["accuracy"] = ( cfmat[1][1] + cfmat[0][0]) / n
+    stats["error"] = ( cfmat[1][0] + cfmat[0][1]) / n
+
+    return (cfmat, stats)
+
 def kmer_initializer(shape, dtype=None, partition_info=None):
   """This kernel initializer function sets the filters used in the first
   convolutional layer of the network to detect known features in the datasets
@@ -19,7 +32,7 @@ def kmer_initializer(shape, dtype=None, partition_info=None):
   return np.reshape(dna_dataset.kmer_seq_to_filters(kmers), shape)
 
 def cnn_model_fn(features, labels, mode):
-  k = 7
+  k = 20
 
   # Define layers
   input_layer = tf.reshape(features["x"], [-1, 1, 100, 4])
@@ -29,7 +42,7 @@ def cnn_model_fn(features, labels, mode):
       filters=128,
       kernel_size=[1, k],
       padding="same",
-      kernel_initializer=kmer_initializer,
+      kernel_initializer=tf.initializers.random_uniform(minval=-1.0, maxval=1.0),
       activation=tf.nn.relu)
 
   pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[1, 10], strides=10)
@@ -78,7 +91,6 @@ def cnn_model_fn(features, labels, mode):
   return tf.estimator.EstimatorSpec(
       mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
-
 def main(unused_argv):
   """main operation loads the dataset, creates the estimator object using the 
   model function defined above, and begins training the dataset."""
@@ -119,6 +131,21 @@ def main(unused_argv):
       shuffle=False)
   eval_results = classifier.evaluate(input_fn=eval_input_fn)
   print(eval_results)
+
+  predict_input_fn = tf.estimator.inputs.numpy_input_fn(
+      x={"x": test_data},
+      y=test_labels,
+      shuffle=False)
+  predict_results = classifier.predict(input_fn=predict_input_fn)
+
+  results = [(test_labels[i],p['classes']) for i,p in enumerate(predict_results)]
+  cfmat, stats = calculate_confusion_matrix( results)
+  print("                {:>14} {:>14}".format("actual hg38", "actual HIV1"))
+  print("predicted hg38: {:>14} {:>14}".format(cfmat[1][1], cfmat[1][0]))
+  print("predicted HIV1: {:>14} {:>14}".format(cfmat[0][1], cfmat[0][0]))
+  print()
+  print("accuracy: {}".format(stats["accuracy"]))
+  print("error:    {}".format(stats["error"]))
 
 if __name__ == "__main__":
   tf.app.run()

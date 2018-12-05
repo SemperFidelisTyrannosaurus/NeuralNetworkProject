@@ -4,6 +4,7 @@ Methods to generate and load the dataset for the convolutional network.
 import numpy as np
 import random
 import pickle
+import os
 
 def is_valid_char(ch):
 	return (ch == 'A' or ch == 'C' or ch == 'T' or ch == 'G' or 
@@ -57,7 +58,7 @@ def gen_sequences(infilename, num_reads, num_samples, label, outfilename):
 def gen_datafiles():
 	"""Generate a data set to be used for the project. For each class of data,
 	a training and a test data file will be generated."""
-	num_reads = 1000
+	num_reads = 10000
 	num_samples = 100
 	gen_sequences('hg38.fa', num_reads, num_samples, 1, 'hg38_train.txt')
 	gen_sequences('HIV-1.fasta', num_reads, num_samples, 0, 'HIV-1_train.txt')
