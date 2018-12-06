@@ -44,7 +44,7 @@ def cnn_model_fn(features, labels, mode):
       filters=128,
       kernel_size=[1, k],
       padding="same",
-      kernel_initializer=kmer_initializer,
+      # kernel_initializer=kmer_initializer,
       activation=tf.nn.relu)
 
   # Initial pooling layer uses pools 10 bins at a time.
@@ -98,6 +98,8 @@ def main(unused_argv):
   """main operation loads the dataset, creates the estimator object using the 
   model function defined above, and begins training the dataset."""
 
+  name = "10glorot"
+
   # Load the dataset.
   files = {
     "train" : ['HIV-1_train.txt','hg38_train.txt'],
@@ -107,7 +109,7 @@ def main(unused_argv):
   test_data, test_labels = dna_dataset.load_labeled_data(files["test"])
 
   classifier = tf.estimator.Estimator(
-      model_fn=cnn_model_fn, model_dir="/tmp/dna_model")
+      model_fn=cnn_model_fn, model_dir="/tmp/dna_model_" + name)
 
   # Create a logger.
   tensors_to_log = {"probabilities": "softmax_tensor"}
@@ -143,12 +145,17 @@ def main(unused_argv):
 
   results = [(test_labels[i],p['classes']) for i,p in enumerate(predict_results)]
   cfmat, stats = calculate_confusion_matrix( results)
-  print("               {:>14} {:>14}".format("actual hg38", "actual HIV1"))
-  print("predicted hg38 {:>14} {:>14}".format(cfmat[1][1], cfmat[1][0]))
-  print("predicted HIV1 {:>14} {:>14}".format(cfmat[0][1], cfmat[0][0]))
-  print()
-  print("accuracy: {}".format(stats["accuracy"]))
-  print("error:    {}".format(stats["error"]))
+
+  with open(name+"_results.md", "w") as resultsfile:
+    resultsfile.write("### {}\n".format(name))
+    resultsfile.write("|                | {:>14} | {:>14} |\n".format("actual hg38", "actual HIV1"))
+    resultsfile.write("|----------------|----------------|----------------|\n")
+    resultsfile.write("| {:<14} | {:>14} | {:>14} |\n".format("predicted hg38", cfmat[1][1], cfmat[1][0]))
+    resultsfile.write("| {:<14} | {:>14} | {:>14} |\n".format("predicted HIV1", cfmat[0][1], cfmat[0][0]))
+    resultsfile.write("\n")
+    resultsfile.write("| {:<14} | {:>14} |\n".format("accuracy", "error"))
+    resultsfile.write("|----------------|----------------|\n")
+    resultsfile.write("| {:<14} | {:>14} |\n".format(stats["accuracy"], stats["error"]))
 
 if __name__ == "__main__":
   tf.app.run()
